@@ -1,5 +1,10 @@
 =head1 NAME Cantella::JobQueue::Store - Store API definition and documentation
 
+=head1 NOTICE
+
+This is experimental software. APIs and implementation details  may be subject
+to change.
+
 =head1 DESCRIPTION
 
 This document is a description of the API requirements for Cantella::JobQueue
@@ -44,13 +49,12 @@ job can not be found.
 
 =item Arguments: none
 
-=item Return Value: C<$success>
+=item Return Value: none
 
 =back
 
-Delete a job from the store. If the job was successfully deleted, return 1;
-otherwise, returns zero . An exception may be thrown in case of an error or if
-a job does not exist.
+Delete a job from the store. An exception should be thrown in case of an error,
+if a job does not exist or if the job is locked.
 
 =head2 complete_job
 
@@ -64,7 +68,47 @@ a job does not exist.
 
 Mark a job as completed. C<$completed_successfully> should be a boolean value.
 Will return 1 on success. If a job has already been marked as complete or does
-not exist an exception may be thrown.
+not exist an exception may be thrown. If the job is locked, then the lock will
+be released after the job is marked as complete.
+
+=head2 lock_job
+
+=over 4
+
+=item Arguments: C<$job_id>, C<DateTime $until>
+
+=item Return Value: C<$success>
+
+=back
+
+Attempt to gain a lock on a job. Will return true if the lock was granted, zero
+if the job is already locked, and throw an exception if the job is not located
+or has already been completed.
+
+=head2 unlock_job
+
+=over 4
+
+=item Arguments: C<$job_id>
+
+=item Return Value: none
+
+=back
+
+Unlock a job. If a job is not locked or does not exist  an exception should
+be thrown.
+
+=head2 clear_expired_locks
+
+=over 4
+
+=item Arguments: none
+
+=item Return Value: none
+
+=back
+
+Clear any expired job locks.
 
 =head2 log_job_error
 
@@ -88,8 +132,9 @@ Log an error associated with C<$job_id>
 
 =back
 
-Returns an array reference with all of the error messages for this job. If the
-job does not exist an exception may be thrown;
+Returns an array reference with all of the error messages for this job in the
+order in which they were logged. If the job does not exist an exception should
+be thrown.
 
 =head2 get_completed_jobs
 
@@ -101,7 +146,8 @@ job does not exist an exception may be thrown;
 
 =back
 
-Returns a list of jobs that have been completed.
+Returns a list of jobs that have been completed. The order of the items in this
+list is at the discretion of the store.
 
 =head2 get_available_jobs
 
