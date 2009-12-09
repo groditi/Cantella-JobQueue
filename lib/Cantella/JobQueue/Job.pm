@@ -22,7 +22,7 @@ has job_type => (
 
 has arguments => (
   is => 'rw',
-  isa => 'Value',
+  isa => 'Ref',
   required => 1
 );
 
